@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="out"/>
+<meta name="theme-color" content="#2A2118"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<title>Out: a field guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --parch:#F2EDE4;
+  --chalk:#D6CCBA;
+  --lichen:#4A5E52;
+  --peat:#2A2118;
+  --rust:#B05C38;
+  --warm:#6B5B47;
+  --mid:#A89880;
+  --border:rgba(42,33,24,0.12);
+  --nav-h:64px;
+  --tab-h:60px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:var(--parch);}
+body{font-family:'DM Sans',system-ui,sans-serif;color:var(--peat);}
+
+/* ── NAV ── */
+.nav{
+  position:fixed;top:0;left:0;right:0;
+  height:var(--nav-h);
+  background:rgba(242,237,228,0.96);
+  border-bottom:0.5px solid var(--border);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  display:flex;align-items:center;
+  padding:0 20px;
+  z-index:1000;
+}
+.nav-wordmark{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:28px;font-weight:300;
+  font-style:italic;
+  color:var(--peat);
+  letter-spacing:0.04em;
+  flex:1;
+}
+.nav-wordmark em{color:var(--rust);font-style:normal;}
+.nav-subtitle{
+  font-size:9px;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--mid);margin-top:2px;display:block;
+}
+.nav-right{display:flex;align-items:center;gap:8px;}
+.nav-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--lichen);
+  animation:breathe 3s ease-in-out infinite;
+}
+@keyframes breathe{0%,100%{opacity:0.4;transform:scale(1)}50%{opacity:1;transform:scale(1.2)}}
+.nav-tag{
+  font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--lichen);font-weight:600;
+}
+
+/* ── PAGES ── */
+.pages{
+  position:fixed;
+  top:var(--nav-h);bottom:var(--tab-h);
+  left:0;right:0;
+  overflow:hidden;
+}
+.page{
+  position:absolute;inset:0;
+  overflow-y:auto;overflow-x:hidden;
+  opacity:0;
+  transform:translateY(8px);
+  transition:opacity 0.28s ease,transform 0.28s ease;
+  pointer-events:none;
+  -webkit-overflow-scrolling:touch;
+}
+.page.active{
+  opacity:1;transform:translateY(0);
+  pointer-events:auto;
+}
+iframe.page{overflow:hidden;}
+
+/* ── BOTTOM TABS ── */
+.tabs{
+  position:fixed;bottom:0;left:0;right:0;
+  height:var(--tab-h);
+  background:rgba(242,237,228,0.97);
+  border-top:0.5px solid var(--border);
+  display:flex;
+  z-index:1000;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.tab-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;
+  background:none;border:none;cursor:pointer;
+  padding:6px 4px;
+  transition:opacity 0.18s;
+}
+.tab-icon{
+  width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.tab-icon svg{width:22px;height:22px;stroke-width:1.4;}
+.tab-label{
+  font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  font-weight:600;color:var(--mid);transition:color 0.18s;
+}
+.tab-btn.active .tab-label{color:var(--peat);}
+.tab-btn.active .tab-icon svg{stroke:var(--peat);}
+.tab-btn:not(.active) .tab-icon svg{stroke:var(--mid);}
+.tab-indicator{
+  position:absolute;top:-2px;left:50%;transform:translateX(-50%);
+  width:0;height:2px;background:var(--rust);
+  border-radius:0 0 2px 2px;
+  transition:width 0.22s ease;
+}
+.tab-btn.active .tab-indicator{width:20px;}
+.tab-btn.soon .tab-label{color:var(--chalk);}
+.tab-btn.soon .tab-icon svg{stroke:var(--chalk);}
+.tab-btn.soon .soon-badge{
+  position:absolute;top:-4px;right:-6px;
+  background:var(--rust);color:#fff;
+  font-size:7px;letter-spacing:0.5px;font-weight:700;
+  padding:1px 4px;border-radius:4px;
+  text-transform:uppercase;
+}
+
+/* ── HOME PAGE ── */
+.home{padding:0 0 20px;}
+.home-hero{
+  padding:40px 24px 32px;
+  background:linear-gradient(170deg,#dcebd4 0%,#e8dfc8 50%,var(--parch) 100%);
+  border-bottom:0.5px solid var(--border);
+}
+.home-title{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:52px;font-weight:300;
+  font-style:italic;color:var(--peat);
+  line-height:1;letter-spacing:0.04em;
+  margin-bottom:8px;
+}
+.home-title em{color:var(--rust);font-style:normal;}
+.home-strapline{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:17px;font-weight:400;
+  color:var(--warm);line-height:1.5;
+  max-width:280px;margin-bottom:20px;
+}
+.home-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{
+  font-size:8px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;
+  padding:3px 10px;border-radius:12px;border:0.5px solid;
+}
+.chip-nbn{background:rgba(90,138,160,0.1);color:#2d5c78;border-color:rgba(90,138,160,0.35);}
+.chip-inat{background:rgba(74,94,82,0.1);color:var(--lichen);border-color:rgba(74,94,82,0.3);}
+.chip-ebird{background:rgba(176,92,56,0.1);color:var(--rust);border-color:rgba(176,92,56,0.3);}
+.chip-met{background:rgba(168,152,128,0.1);color:var(--warm);border-color:rgba(168,152,128,0.3);}
+
+.home-cards{padding:24px 16px;display:flex;flex-direction:column;gap:12px;}
+.home-card{
+  background:#fff;border:0.5px solid var(--border);
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 2px 12px rgba(42,33,24,0.06);
+  cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;
+  text-align:left;
+  -webkit-appearance:none;appearance:none;
+  width:100%;
+}
+.home-card:active{transform:scale(0.98);box-shadow:none;}
+.home-card-inner{display:flex;align-items:stretch;}
+.home-card-accent{width:4px;flex-shrink:0;}
+.accent-lichen{background:var(--lichen);}
+.accent-rust{background:var(--rust);}
+.accent-peat{background:var(--peat);}
+.home-card-body{padding:16px 18px;flex:1;}
+.home-card-label{
+  font-size:8px;letter-spacing:2px;text-transform:uppercase;
+  font-weight:700;margin-bottom:5px;
+}
+.label-lichen{color:var(--lichen);}
+.label-rust{color:var(--rust);}
+.label-peat{color:var(--mid);}
+.home-card-title{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:22px;font-weight:400;
+  color:var(--peat);line-height:1.15;margin-bottom:6px;
+}
+.home-card-desc{font-size:12px;color:var(--warm);line-height:1.55;}
+.home-card-cta{
+  font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  font-weight:700;margin-top:10px;display:flex;align-items:center;gap:4px;
+}
+.cta-lichen{color:var(--lichen);}
+.cta-rust{color:var(--rust);}
+.cta-soon{color:var(--mid);}
+.home-card-aside{
+  width:80px;flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:6px;padding:16px 12px;
+  background:rgba(242,237,228,0.6);
+  border-left:0.5px solid var(--border);
+}
+.aside-icon{font-size:28px;line-height:1;}
+.aside-stat{text-align:center;}
+.aside-val{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:20px;font-weight:400;color:var(--peat);display:block;line-height:1;
+}
+.aside-unit{font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--mid);font-weight:600;}
+.soon-pill{
+  display:inline-block;
+  font-size:7px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;
+  padding:2px 8px;border-radius:8px;
+  background:rgba(176,92,56,0.12);color:var(--rust);
+  margin-bottom:5px;
+}
+.home-footer{
+  padding:16px 24px 8px;
+  border-top:0.5px solid var(--border);
+  display:flex;gap:8px;flex-wrap:wrap;
+}
+.footer-tag{
+  font-size:8px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--mid);padding:2px 8px;
+  border:0.5px solid var(--border);border-radius:8px;
+}
+
+/* ── QUEST PAGE ── */
+.quest-page{padding:0;}
+.quest-hero{
+  padding:36px 24px 28px;
+  background:linear-gradient(160deg,#1a2a1e 0%,#2e4a32 50%,#3a5c30 100%);
+  position:relative;overflow:hidden;
+}
+.quest-hero::before{
+  content:'';position:absolute;
+  top:-60px;right:-40px;width:200px;height:200px;
+  background:radial-gradient(ellipse,rgba(180,200,164,0.15),transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
+.quest-eyebrow{
+  font-size:8px;letter-spacing:2.5px;text-transform:uppercase;
+  color:rgba(180,200,164,0.7);font-weight:700;margin-bottom:10px;
+}
+.quest-date{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:13px;color:rgba(242,237,228,0.5);
+  font-style:italic;margin-bottom:16px;
+}
+.quest-title{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:36px;font-weight:300;
+  color:#F2EDE4;line-height:1.1;margin-bottom:12px;
+}
+.quest-title em{color:#c8d8a0;font-style:italic;}
+.quest-location{
+  font-size:11px;color:rgba(242,237,228,0.55);
+  display:flex;align-items:center;gap:5px;
+}
+.quest-body{padding:24px 20px;display:flex;flex-direction:column;gap:16px;}
+.quest-conditions{
+  background:#fff;border:0.5px solid var(--border);
+  border-radius:14px;padding:16px;
+  display:flex;gap:0;overflow:hidden;
+}
+.qc-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  gap:3px;padding:0 8px;
+  border-right:0.5px solid var(--border);
+}
+.qc-item:last-child{border-right:none;}
+.qc-val{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:22px;font-weight:400;color:var(--peat);
+}
+.qc-label{font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--mid);font-weight:600;}
+.quest-card{
+  background:var(--peat);border-radius:16px;
+  padding:20px;position:relative;overflow:hidden;
+}
+.quest-card::before{
+  content:'';position:absolute;
+  top:-40px;right:-40px;width:160px;height:160px;
+  background:radial-gradient(ellipse,rgba(176,92,56,0.2),transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
+.qcard-eyebrow{
+  font-size:8px;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(176,92,56,0.8);font-weight:700;margin-bottom:8px;
+}
+.qcard-species{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:28px;font-weight:400;
+  color:#F2EDE4;line-height:1.1;margin-bottom:4px;
+}
+.qcard-latin{
+  font-family:'Cormorant',Georgia,serif;
+  font-style:italic;font-size:13px;
+  color:rgba(242,237,228,0.45);margin-bottom:14px;
+}
+.qcard-prob{
+  display:flex;align-items:center;gap:10px;margin-bottom:16px;
+}
+.prob-bar-track{
+  flex:1;height:4px;border-radius:2px;
+  background:rgba(255,255,255,0.1);overflow:hidden;
+}
+.prob-bar-fill{
+  height:100%;border-radius:2px;background:#7aaa5a;width:72%;
+}
+.prob-text{font-size:11px;color:rgba(255,255,255,0.55);white-space:nowrap;}
+.qcard-desc{
+  font-size:12px;color:rgba(242,237,228,0.6);
+  line-height:1.6;margin-bottom:18px;
+}
+.qcard-buttons{display:flex;gap:8px;}
+.qbtn{
+  flex:1;padding:11px;border-radius:10px;border:none;
+  font-family:'DM Sans',sans-serif;font-size:11px;
+  font-weight:700;letter-spacing:0.5px;cursor:pointer;
+  transition:opacity 0.18s;
+}
+.qbtn:active{opacity:0.7;}
+.qbtn-primary{background:var(--rust);color:#fff;}
+.qbtn-secondary{background:rgba(255,255,255,0.08);color:rgba(242,237,228,0.7);border:0.5px solid rgba(255,255,255,0.12);}
+.streak-bar{
+  background:#fff;border:0.5px solid var(--border);
+  border-radius:14px;padding:16px;
+  display:flex;align-items:center;gap:14px;
+}
+.streak-num{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:42px;font-weight:300;color:var(--peat);line-height:1;
+}
+.streak-info{flex:1;}
+.streak-label{
+  font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  font-weight:700;color:var(--lichen);margin-bottom:3px;
+}
+.streak-sub{font-size:11px;color:var(--warm);}
+.streak-dots{display:flex;gap:4px;margin-top:8px;}
+.sdot{width:8px;height:8px;border-radius:50%;background:var(--chalk);}
+.sdot.done{background:var(--lichen);}
+.sdot.today{background:var(--rust);animation:pulse 1.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+.lock-card{
+  background:var(--chalk);border:0.5px solid var(--border);
+  border-radius:14px;padding:16px;
+  display:flex;align-items:center;gap:14px;
+}
+.lock-icon{
+  width:44px;height:44px;border-radius:10px;
+  background:rgba(42,33,24,0.08);
+  display:flex;align-items:center;justify-content:center;
+}
+.lock-icon svg{width:22px;height:22px;stroke:var(--peat);stroke-width:1.5;}
+.lock-title{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:16px;font-weight:400;color:var(--peat);margin-bottom:2px;
+}
+.lock-desc{font-size:11px;color:var(--warm);}
+.lock-toggle{
+  margin-left:auto;width:38px;height:22px;border-radius:11px;
+  background:var(--lichen);border:none;cursor:pointer;
+  position:relative;transition:background 0.2s;
+}
+.lock-toggle::after{
+  content:'';position:absolute;
+  top:3px;right:4px;width:16px;height:16px;
+  border-radius:50%;background:#fff;
+  transition:right 0.2s;
+}
+.lock-toggle.off{background:rgba(42,33,24,0.2);}
+.lock-toggle.off::after{right:18px;}
+
+/* ── DEEPER PAGE ── */
+.deeper-page{padding:0;}
+.deeper-hero{
+  padding:36px 24px 28px;
+  background:linear-gradient(160deg,#2a1810 0%,#4a2c1a 60%,#6b4c2e 100%);
+  position:relative;overflow:hidden;
+}
+.deeper-hero::before{
+  content:'';position:absolute;top:-50px;left:-30px;
+  width:180px;height:180px;
+  background:radial-gradient(ellipse,rgba(176,92,56,0.2),transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
+.deeper-eyebrow{
+  font-size:8px;letter-spacing:2.5px;text-transform:uppercase;
+  color:rgba(176,92,56,0.7);font-weight:700;margin-bottom:10px;
+}
+.deeper-title{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:36px;font-weight:300;
+  color:#F2EDE4;line-height:1.1;margin-bottom:10px;
+}
+.deeper-title em{color:#e0c8a0;font-style:italic;}
+.deeper-sub{font-size:12px;color:rgba(242,237,228,0.5);line-height:1.55;}
+.deeper-body{padding:20px 16px;display:flex;flex-direction:column;gap:12px;}
+.exp-card{
+  background:#fff;border:0.5px solid var(--border);
+  border-radius:16px;overflow:hidden;
+  cursor:pointer;
+  transition:transform 0.2s;
+}
+.exp-card:active{transform:scale(0.98);}
+.exp-card-img{
+  height:120px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:48px;
+  position:relative;
+}
+.exp-img-dawn{background:linear-gradient(135deg,#1a2a1e,#3a5c30);}
+.exp-img-fish{background:linear-gradient(135deg,#0a1a2e,#1a3a5a);}
+.exp-img-forage{background:linear-gradient(135deg,#2a1a08,#5a3a18);}
+.exp-img-bat{background:linear-gradient(135deg,#0a0a1a,#1a1a3a);}
+.exp-img-botanical{background:linear-gradient(135deg,#0a2a0a,#1a4a2a);}
+.exp-card-body{padding:14px 16px;}
+.exp-type{
+  font-size:8px;letter-spacing:1.5px;text-transform:uppercase;
+  font-weight:700;color:var(--lichen);margin-bottom:4px;
+}
+.exp-title{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:20px;font-weight:400;color:var(--peat);
+  margin-bottom:4px;line-height:1.2;
+}
+.exp-meta{display:flex;align-items:center;gap:10px;margin-top:8px;}
+.exp-price{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:18px;font-weight:400;color:var(--peat);
+}
+.exp-duration{
+  font-size:10px;color:var(--mid);
+  padding:2px 8px;border-radius:8px;
+  background:var(--parch);border:0.5px solid var(--border);
+}
+.exp-guide{
+  font-size:10px;color:var(--warm);margin-left:auto;
+  font-style:italic;font-family:'Cormorant',Georgia,serif;
+}
+.exp-badge{
+  position:absolute;top:10px;right:10px;
+  font-size:8px;letter-spacing:1px;text-transform:uppercase;
+  font-weight:700;padding:3px 8px;border-radius:8px;
+}
+.badge-avail{background:rgba(74,94,82,0.85);color:#c8d8b0;}
+.badge-soon{background:rgba(42,33,24,0.7);color:rgba(242,237,228,0.6);}
+.deeper-section-label{
+  font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--mid);font-weight:700;
+  padding:0 4px;margin-top:4px;
+}
+.deeper-cta{
+  background:var(--peat);border-radius:14px;
+  padding:20px;text-align:center;margin:4px 0 8px;
+}
+.dcta-title{
+  font-family:'Cormorant',Georgia,serif;
+  font-size:20px;font-weight:400;
+  color:#F2EDE4;margin-bottom:6px;
+}
+.dcta-sub{font-size:11px;color:rgba(242,237,228,0.5);margin-bottom:14px;line-height:1.5;}
+.dcta-btn{
+  display:inline-block;
+  background:var(--rust);color:#fff;
+  font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
+  font-weight:700;padding:10px 24px;border-radius:20px;border:none;
+  cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div>
+    <div class="nav-wordmark"><em>out</em></div>
+    <span class="nav-subtitle">a field guide</span>
+  </div>
+  <div class="nav-right">
+    <div class="nav-dot"></div>
+    <span class="nav-tag">Live</span>
+  </div>
+</nav>
+
+<!-- PAGES -->
+<div class="pages">
+
+  <!-- PAGE 0: HOME -->
+  <div class="page active" id="page-home">
+    <div class="home">
+      <div class="home-hero">
+        <div class="home-title"><em>out</em></div>
+        <div class="home-strapline">Not knowing what nature will make you become.</div>
+        <div class="home-chips">
+          <span class="chip chip-nbn">NBN Atlas</span>
+          <span class="chip chip-inat">iNaturalist</span>
+          <span class="chip chip-ebird">eBird</span>
+          <span class="chip chip-met">Open-Meteo</span>
+        </div>
+      </div>
+
+      <div class="home-cards">
+
+        <button class="home-card" onclick="goTo('guide')">
+          <div class="home-card-inner">
+            <div class="home-card-accent accent-lichen"></div>
+            <div class="home-card-body">
+              <div class="home-card-label label-lichen">Field guide</div>
+              <div class="home-card-title">What's out there right now</div>
+              <div class="home-card-desc">Real-time encounter conditions for 90 species. Birds, fragrant plants, and wind-song trees — ranked by today's chance of encounter.</div>
+              <div class="home-card-cta cta-lichen">Open field guide <span>→</span></div>
+            </div>
+            <div class="home-card-aside">
+              <div class="aside-icon">🐦</div>
+              <div class="aside-stat">
+                <span class="aside-val">90</span>
+                <span class="aside-unit">species</span>
+              </div>
+            </div>
+          </div>
+        </button>
+
+        <button class="home-card" onclick="goTo('quest')">
+          <div class="home-card-inner">
+            <div class="home-card-accent accent-rust"></div>
+            <div class="home-card-body">
+              <div class="soon-pill">Coming soon</div>
+              <div class="home-card-label label-rust">Today's quest</div>
+              <div class="home-card-title">One thing to find today</div>
+              <div class="home-card-desc">A daily nature quest based on live conditions near you. Build a streak. Lock your phone until you've found it. Earn your scroll.</div>
+              <div class="home-card-cta cta-rust">Preview →</div>
+            </div>
+            <div class="home-card-aside">
+              <div class="aside-icon">🔥</div>
+              <div class="aside-stat">
+                <span class="aside-val">7</span>
+                <span class="aside-unit">day streak</span>
+              </div>
+            </div>
+          </div>
+        </button>
+
+        <button class="home-card" onclick="goTo('deeper')">
+          <div class="home-card-inner">
+            <div class="home-card-accent accent-peat"></div>
+            <div class="home-card-body">
+              <div class="soon-pill">Coming soon</div>
+              <div class="home-card-label label-peat">Get deeper</div>
+              <div class="home-card-title">Go with someone who knows</div>
+              <div class="home-card-desc">Guided dawn chorus walks, fly fishing lessons, botanical forays, bat surveys. Book a nature expert, near you, when conditions are right.</div>
+              <div class="home-card-cta cta-soon">Browse experiences →</div>
+            </div>
+            <div class="home-card-aside">
+              <div class="aside-icon">🌿</div>
+              <div class="aside-stat">
+                <span class="aside-val">50+</span>
+                <span class="aside-unit">guides</span>
+              </div>
+            </div>
+          </div>
+        </button>
+
+      </div>
+
+      <div class="home-footer">
+        <span class="footer-tag">Pre-seed 2026</span>
+        <span class="footer-tag">Working prototype</span>
+        <span class="footer-tag">BGV · Zinc VC</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 1: FIELD GUIDE (existing app in iframe) -->
+  <iframe
+    class="page"
+    id="page-guide"
+    src="app.html?embedded=1"
+    frameborder="0"
+    allow="geolocation"
+    style="width:100%;height:100%;border:none;"
+  ></iframe>
+
+  <!-- PAGE 2: TODAY'S QUEST -->
+  <div class="page" id="page-quest">
+    <div class="quest-page">
+
+      <div class="quest-hero">
+        <div class="quest-eyebrow">Today's quest</div>
+        <div class="quest-date">Tuesday, a warm evening in May</div>
+        <div class="quest-title">Find a <em>nightingale</em><br>before dark</div>
+        <div class="quest-location">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="stroke:rgba(242,237,228,0.4);stroke-width:1.3"><circle cx="6" cy="5" r="2"/><path d="M6 11C6 11 2 7.5 2 5a4 4 0 018 0c0 2.5-4 6-4 6z"/></svg>
+          Near you · conditions excellent until 9:40pm
+        </div>
+      </div>
+
+      <div class="quest-body">
+
+        <div class="quest-conditions">
+          <div class="qc-item">
+            <div class="qc-val">72%</div>
+            <div class="qc-label">Conditions</div>
+          </div>
+          <div class="qc-item">
+            <div class="qc-val">18°</div>
+            <div class="qc-label">Temp</div>
+          </div>
+          <div class="qc-item">
+            <div class="qc-val">8</div>
+            <div class="qc-label">km/h wind</div>
+          </div>
+          <div class="qc-item">
+            <div class="qc-val">0mm</div>
+            <div class="qc-label">Rain</div>
+          </div>
+        </div>
+
+        <div class="quest-card">
+          <div class="qcard-eyebrow">Common Nightingale</div>
+          <div class="qcard-species">Luscinia megarhynchos</div>
+          <div class="qcard-latin">Spring · nocturnal · woodland edge</div>
+          <div class="qcard-prob">
+            <div class="prob-bar-track"><div class="prob-bar-fill"></div></div>
+            <div class="prob-text">72% · Good conditions</div>
+          </div>
+          <div class="qcard-desc">Head to dense scrub or hedgerow at dusk. Listen for rich liquid trills — complex, improvised, unlike any other British bird. Best from 9pm.</div>
+          <div class="qcard-buttons">
+            <button class="qbtn qbtn-primary" onclick="didFind()">I found it ✓</button>
+            <button class="qbtn qbtn-secondary">I didn't →</button>
+          </div>
+        </div>
+
+        <div class="streak-bar">
+          <div class="streak-num">7</div>
+          <div class="streak-info">
+            <div class="streak-label">Day streak</div>
+            <div class="streak-sub">Complete today's quest to keep it going</div>
+            <div class="streak-dots">
+              <div class="sdot done"></div>
+              <div class="sdot done"></div>
+              <div class="sdot done"></div>
+              <div class="sdot done"></div>
+              <div class="sdot done"></div>
+              <div class="sdot done"></div>
+              <div class="sdot today"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lock-card">
+          <div class="lock-icon">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+          </div>
+          <div>
+            <div class="lock-title">Lock Instagram</div>
+            <div class="lock-desc">Until today's quest is complete</div>
+          </div>
+          <button class="lock-toggle" id="lock-toggle" onclick="toggleLock(this)"></button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 3: GET DEEPER -->
+  <div class="page" id="page-deeper">
+    <div class="deeper-page">
+
+      <div class="deeper-hero">
+        <div class="deeper-eyebrow">Get deeper into nature</div>
+        <div class="deeper-title">Go with someone<br>who <em>knows</em></div>
+        <div class="deeper-sub">Book a nature expert near you. Dawn chorus walks, fly fishing, botanical forays, bat surveys. When conditions are right, we'll tell you.</div>
+      </div>
+
+      <div class="deeper-body">
+
+        <div class="deeper-section-label">Available to book</div>
+
+        <div class="exp-card" onclick="showBooking('Dawn Chorus Walk')">
+          <div class="exp-card-img exp-img-dawn">
+            🐦
+            <span class="exp-badge badge-avail">Book now</span>
+          </div>
+          <div class="exp-card-body">
+            <div class="exp-type">Birdsong · Guided walk</div>
+            <div class="exp-title">Dawn Chorus Walk</div>
+            <div class="exp-meta">
+              <div class="exp-price">£35</div>
+              <div class="exp-duration">2.5 hrs</div>
+              <div class="exp-guide">with James W.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card" onclick="showBooking('Fly Fishing Introduction')">
+          <div class="exp-card-img exp-img-fish">
+            🎣
+            <span class="exp-badge badge-avail">Book now</span>
+          </div>
+          <div class="exp-card-body">
+            <div class="exp-type">Fishing · Beginner lesson</div>
+            <div class="exp-title">Fly Fishing Introduction</div>
+            <div class="exp-meta">
+              <div class="exp-price">£65</div>
+              <div class="exp-duration">3 hrs</div>
+              <div class="exp-guide">with River Wye Guides</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="deeper-section-label" style="margin-top:8px;">Coming soon</div>
+
+        <div class="exp-card">
+          <div class="exp-card-img exp-img-forage">
+            🍄
+            <span class="exp-badge badge-soon">Autumn 2026</span>
+          </div>
+          <div class="exp-card-body">
+            <div class="exp-type">Foraging · Half day</div>
+            <div class="exp-title">Wild Food Foray</div>
+            <div class="exp-meta">
+              <div class="exp-price">£55</div>
+              <div class="exp-duration">4 hrs</div>
+              <div class="exp-guide">with Sarah M.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-card-img exp-img-bat">
+            🦇
+            <span class="exp-badge badge-soon">Summer 2026</span>
+          </div>
+          <div class="exp-card-body">
+            <div class="exp-type">Mammals · Evening survey</div>
+            <div class="exp-title">Bat Walk & Survey</div>
+            <div class="exp-meta">
+              <div class="exp-price">£28</div>
+              <div class="exp-duration">2 hrs</div>
+              <div class="exp-guide">with Bat Conservation Trust</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-card-img exp-img-botanical">
+            🌿
+            <span class="exp-badge badge-soon">Spring 2027</span>
+          </div>
+          <div class="exp-card-body">
+            <div class="exp-type">Plants · Guided foray</div>
+            <div class="exp-title">Botanical Identification Walk</div>
+            <div class="exp-meta">
+              <div class="exp-price">£40</div>
+              <div class="exp-duration">3 hrs</div>
+              <div class="exp-guide">with Dr. R. Hargreaves</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="deeper-cta">
+          <div class="dcta-title">Are you a nature guide?</div>
+          <div class="dcta-sub">We're onboarding guides ahead of launch. No tech skills needed — just bring your expertise.</div>
+          <button class="dcta-btn" onclick="guideSignup()">Express interest →</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM TABS -->
+<nav class="tabs">
+
+  <button class="tab-btn" id="tab-home" onclick="goTo('home')">
+    <div class="tab-icon">
+      <div class="tab-indicator"></div>
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 12L12 4l9 8M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="tab-label">Home</div>
+  </button>
+
+  <button class="tab-btn" id="tab-guide" onclick="goTo('guide')">
+    <div class="tab-icon">
+      <div class="tab-indicator"></div>
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="11" cy="11" r="7" stroke-linecap="round"/>
+        <path d="M8 11c0-1.7 1.3-3 3-3" stroke-linecap="round"/>
+        <path d="M20 20l-3-3" stroke-linecap="round"/>
+        <path d="M14 6.5C15.8 7.5 17 9.6 17 11" stroke-linecap="round" stroke-dasharray="1.5 2"/>
+      </svg>
+    </div>
+    <div class="tab-label">Field guide</div>
+  </button>
+
+  <button class="tab-btn soon" id="tab-quest" onclick="goTo('quest')">
+    <div class="tab-icon">
+      <div class="tab-indicator"></div>
+      <span class="soon-badge">New</span>
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="9" stroke-linecap="round"/>
+        <path d="M12 7v5l3 3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="tab-label">Quest</div>
+  </button>
+
+  <button class="tab-btn soon" id="tab-deeper" onclick="goTo('deeper')">
+    <div class="tab-icon">
+      <div class="tab-indicator"></div>
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 21C7 21 3 16.97 3 12S7 3 12 3s9 4.03 9 9" stroke-linecap="round"/>
+        <path d="M15 12c0-1.7-1.3-3-3-3s-3 1.3-3 3 1.3 3 3 3" stroke-linecap="round"/>
+        <path d="M17 17l2 2 3-3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="tab-label">Get deeper</div>
+  </button>
+
+</nav>
+
+<!-- BOOKING OVERLAY -->
+<div id="booking-overlay" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(42,33,24,0.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);align-items:flex-end;">
+  <div style="background:var(--parch);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;">
+    <div style="width:36px;height:3px;background:var(--chalk);border-radius:2px;margin:0 auto 20px;"></div>
+    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--lichen);font-weight:700;margin-bottom:6px;">Book experience</div>
+    <div style="font-family:'Cormorant',Georgia,serif;font-size:26px;font-weight:400;color:var(--peat);margin-bottom:16px;" id="booking-title">Dawn Chorus Walk</div>
+    <div style="background:#fff;border:0.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--mid);margin-bottom:8px;">Choose a date</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <div style="padding:6px 12px;border-radius:8px;background:var(--peat);color:#F2EDE4;font-size:11px;font-weight:600;">Sat 17 May</div>
+        <div style="padding:6px 12px;border-radius:8px;border:0.5px solid var(--border);font-size:11px;color:var(--warm);">Sun 18 May</div>
+        <div style="padding:6px 12px;border-radius:8px;border:0.5px solid var(--border);font-size:11px;color:var(--warm);">Sat 24 May</div>
+        <div style="padding:6px 12px;border-radius:8px;border:0.5px solid var(--border);font-size:11px;color:var(--mid);">Sun 25 May</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;">
+      <div style="font-family:'Cormorant',Georgia,serif;font-size:28px;color:var(--peat);">£35</div>
+      <div style="font-size:11px;color:var(--mid);">per person · 2.5 hrs<br>Conditions: excellent Sat morning</div>
+    </div>
+    <button onclick="confirmBooking()" style="width:100%;padding:14px;border-radius:14px;border:none;background:var(--peat);color:#F2EDE4;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.5px;cursor:pointer;">Request to book</button>
+    <button onclick="closeBooking()" style="width:100%;padding:12px;border-radius:14px;border:none;background:none;color:var(--mid);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;margin-top:8px;">Cancel</button>
+  </div>
+</div>
+
+<!-- CONFIRMATION TOAST -->
+<div id="confirm-toast" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--lichen);color:#fff;padding:10px 24px;border-radius:24px;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;z-index:3000;white-space:nowrap;box-shadow:0 4px 18px rgba(74,94,82,0.35);">
+  Booking request sent 🌿
+</div>
+
+<script>
+const pages={home:'page-home',guide:'page-guide',quest:'page-quest',deeper:'page-deeper'};
+const tabs={home:'tab-home',guide:'tab-guide',quest:'tab-quest',deeper:'tab-deeper'};
+let current='home';
+
+function goTo(id){
+  document.getElementById(pages[current])?.classList.remove('active');
+  document.getElementById(tabs[current])?.classList.remove('active');
+  current=id;
+  document.getElementById(pages[id])?.classList.add('active');
+  const tb=document.getElementById(tabs[id]);
+  if(tb){tb.classList.add('active');tb.classList.remove('soon');}
+}
+
+// Set home as default active tab
+goTo('home');
+
+function didFind(){
+  const btn=document.querySelector('.qbtn-primary');
+  btn.textContent='Found! +50 XP 🌿';
+  btn.style.background='#4A5E52';
+  document.querySelector('.sdot.today').classList.add('done');
+  document.querySelector('.sdot.today').classList.remove('today');
+  showToast('Quest complete · 7 day streak · +50 XP');
+}
+
+function toggleLock(el){
+  el.classList.toggle('off');
+}
+
+function showBooking(title){
+  document.getElementById('booking-title').textContent=title;
+  const o=document.getElementById('booking-overlay');
+  o.style.display='flex';
+}
+
+function closeBooking(){
+  document.getElementById('booking-overlay').style.display='none';
+}
+
+function confirmBooking(){
+  closeBooking();
+  showToast('Booking request sent 🌿');
+}
+
+function guideSignup(){
+  showToast('Added to guide waitlist');
+}
+
+function showToast(msg){
+  const t=document.getElementById('confirm-toast');
+  t.textContent=msg;
+  t.style.display='block';
+  setTimeout(()=>t.style.display='none',2600);
+}
+</script>
+
+</body>
+</html>
